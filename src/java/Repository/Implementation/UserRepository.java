@@ -39,8 +39,7 @@ public class UserRepository implements Repository<User>{
     @Override
     public User read(int id) {
         EntityManager em = emf.createEntityManager();                
-        User retrivedUser = em.find(User.class, id);                
-        em.close();
+        User retrivedUser = em.find(User.class, id);                        
         return retrivedUser;
     }
 
@@ -59,15 +58,9 @@ public class UserRepository implements Repository<User>{
     }
 
     @Override
-    public List<User> all(int lowerBound, int upperBound) {
+    public List<User> all() {
         EntityManager em = emf.createEntityManager();
-        Query result = null;
-        if(lowerBound == 0 && upperBound == -1){
-            result = em.createNativeQuery("select * from users");
-        }else{
-            result = em.createNativeQuery(String.format("select * from users limit %d offset %s", upperBound-lowerBound, lowerBound));
-        }
-        em.close();
+        Query result = em.createQuery("select u from User u", User.class);        
         return result.getResultList();
     }
     

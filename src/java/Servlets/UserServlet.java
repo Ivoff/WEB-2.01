@@ -10,9 +10,11 @@ import Entities.User;
 import Repository.Implementation.UserRepository;
 import Repository.Repository;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.Instant;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,22 +41,40 @@ public class UserServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User user = new User();
         Repository repo = new UserRepository();
-        RequestDispatcher view = request.getRequestDispatcher("User.jsp");                
+        RequestDispatcher view = request.getRequestDispatcher("User.jsp");                        
         
         if(request.getParameter("flag") != null){
-            user.setId(0);
-            user.setName(request.getParameter("input_name"));
-            user.setEmail(request.getParameter("input_email"));
             if(request.getParameter("input_password").equals(request.getParameter("input_confirm"))){
                 user.setHashPass(request.getParameter("input_password"));
-                user.setCreatedAt(OffsetDateTime.now());                
-                user.setUpdatedAt(OffsetDateTime.now());
-                repo.save(user);
             }else{
                 request.setAttribute("error", "Missmatched passwords");
                 view.forward(request, response);
             }
+            user.setName(request.getParameter("input_name"));
+            user.setEmail(request.getParameter("input_email"));
+            try{
+                user.setBirthday(new SimpleDateFormat("yyyy-MM-dd").parse(request.getParameter("input_birthday")));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            if(request.getParameter("flag").equals("insertion")){
+                user.setId(0);
+                user.setCreatedAt(OffsetDateTime.now());
+                user.setUpdatedAt(OffsetDateTime.now());
+            }
+            else{
+                user.setId(Integer.parseInt(request.getParameter("user_id")));
+                User aux = (User) repo.read(user.getId());
+                user.setCreatedAt(aux.getCreatedAt());
+                user.setUpdatedAt(OffsetDateTime.now());
+            }
+            repo.save(user);
+            request.setAttribute("success", "Successfully saved");            
+        }else if(request.getParameter("edit") != null){
+            user = (User) repo.read(Integer.parseInt(request.getParameter("edit")));
+            request.setAttribute("selected_user", user);
         }
+        request.setAttribute("all", repo.all());
         view.forward(request, response);
     }
 

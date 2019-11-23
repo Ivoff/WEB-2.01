@@ -2,6 +2,7 @@ package Entities;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "users")
@@ -26,13 +29,17 @@ public class User {
     private String email;
     
     @Column(name = "hash_pass", nullable = false)
-    private String hashPass;
+    private String hashPass;        
     
     @Column(name = "created_at", nullable = false)    
     private OffsetDateTime createdAt;
     
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+    
+    @Temporal(TemporalType.DATE)
+    @Column(name = "birthday", nullable = false)
+    private Date birthday;  
 
     public int getId() {
         return id;
@@ -80,5 +87,13 @@ public class User {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }        
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
     }        
 }
