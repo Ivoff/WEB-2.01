@@ -10,8 +10,10 @@ import Repository.Repository;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -48,8 +50,8 @@ public class UserRepository implements Repository<User>{
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
         
-            if(em.contains(e)){
-                em.merge(e);
+            if(!em.contains(e)){
+                e = em.find(User.class, e.getId());
             }
             em.remove(e);
         
@@ -64,4 +66,25 @@ public class UserRepository implements Repository<User>{
         return result.getResultList();
     }
     
+    public boolean testUser(String email, String rawpass){
+        EntityManager em = emf.createEntityManager();
+        Query result = em.createNativeQuery("select * from users where email = '"+email+"'", User.class);
+        User user = null;
+        try{
+            user = (User) result.getSingleResult();
+            System.out.println("\n\n\n\n\n"+user.getEmail()+"\n\n\n\n\n");
+        }catch(NoResultException e){
+            return false;
+        }        
+        return BCrypt.checkpw(rawpass, user.getHashPass()) ? true : false;        
+    }
+    
+    public List<User> search(String query){
+        EntityManager em = emf.createEntityManager();
+        StringBuilder sb = new StringBuilder(query);
+        sb.deleteCharAt(0);
+        String query2 = sb.toString();
+        Query result = em.createNativeQuery("select * from users where name like '%"+query+"%' or name like '_"+query2+"%'", User.class);
+        return result.getResultList();
+    }
 }

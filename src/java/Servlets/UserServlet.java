@@ -40,7 +40,7 @@ public class UserServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User user = new User();
-        Repository repo = new UserRepository();
+        UserRepository repo = new UserRepository();
         RequestDispatcher view = request.getRequestDispatcher("User.jsp");                        
         
         if(request.getParameter("flag") != null){
@@ -48,6 +48,7 @@ public class UserServlet extends HttpServlet {
                 user.setHashPass(request.getParameter("input_password"));
             }else{
                 request.setAttribute("error", "Missmatched passwords");
+                request.setAttribute("all", repo.all());
                 view.forward(request, response);
             }
             user.setName(request.getParameter("input_name"));
@@ -73,6 +74,35 @@ public class UserServlet extends HttpServlet {
         }else if(request.getParameter("edit") != null){
             user = (User) repo.read(Integer.parseInt(request.getParameter("edit")));
             request.setAttribute("selected_user", user);
+        }else if(request.getParameter("destroy") != null){
+            user = (User) repo.read(Integer.parseInt(request.getParameter("destroy")));
+            request.setAttribute("dashboard", "not_null");
+            repo.delete(user);
+        }else if(request.getParameter("login") != null){            
+            if(repo.testUser(request.getParameter("user_email"), request.getParameter("user_pass"))){                
+                request.setAttribute("status", "OK");
+                request.setAttribute("all", repo.all());
+                request.setAttribute("test", "true");
+                view.forward(request, response);
+            }else{                
+                request.setAttribute("status", "NOT-OK");
+                request.setAttribute("all", repo.all());
+                request.setAttribute("test", "true");
+                view.forward(request, response);
+            }
+        }else if(request.getParameter("logout") != null){
+            request.setAttribute("all", repo.all());
+            request.setAttribute("test", "true");
+            view.forward(request, response);
+        }else if(request.getParameter("search") != null){
+            List<User> queryList = repo.search(request.getParameter("query"));
+            request.setAttribute("all", queryList);
+            request.setAttribute("dashboard", "not_null");
+            view.forward(request, response);
+        }else if(request.getParameter("reset") != null){
+            request.setAttribute("all", repo.all());
+            request.setAttribute("dashboard", "not_null");
+            view.forward(request, response);
         }
         request.setAttribute("all", repo.all());
         view.forward(request, response);

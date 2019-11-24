@@ -12,6 +12,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Entity
 @Table(name = "users")
@@ -70,7 +71,7 @@ public class User {
     }
 
     public void setHashPass(String hashPass) {
-        this.hashPass = hashPass;
+        this.hashPass = BCrypt.hashpw(hashPass, BCrypt.gensalt());
     }
 
     public OffsetDateTime getCreatedAt() {
